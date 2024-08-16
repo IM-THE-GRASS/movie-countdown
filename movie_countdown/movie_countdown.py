@@ -3,7 +3,7 @@
 import reflex as rx
 import requests
 import json
-
+from datetime import datetime
 from rxconfig import config
 
 
@@ -20,8 +20,29 @@ class State(rx.State):
         self.title = data["title"]
         self.overview = data["overview"]
         self.type = data["type"]
+        self.release_date = data["release_date"]
+        self.times["Days"] = data["days_until"]
+        self.img_url = data["poster_url"]
+        
     def update_time(self, _):
-        print("TIME MAYBE UPDATE")
+        if not self.release_date:
+            print("no rel date")
+            return
+        now = datetime.now()
+        rel_date = datetime.strptime(self.release_date, "%Y-%m-%d")
+        time_diff = rel_date- now
+        hours = time_diff.seconds // 3600#this part
+        minutes = (time_diff.seconds % 3600) // 60#and this
+        seconds = time_diff.seconds % 60# and thsi were done  by ai
+        if hours <10:
+            hours = "0" + str(hours)
+        if minutes <10:
+            minutes = "0" + str(minutes)
+        if seconds <10:
+            seconds = "0" + str(seconds)
+        self.times["Hours"] = str(hours)
+        self.times["Minutes"] = str(minutes)
+        self.times["Seconds"] = str(seconds)
 
 def countdown_timer(info):
     return rx.vstack(
@@ -45,22 +66,23 @@ def countdown_timer(info):
             width="100%"
         )
     )
+@rx.page(on_load=State.get_data())
 def index() -> rx.Component:
-    # Welcome Page (Index)
     return rx.center(
         rx.box(
             
             rx.vstack(
                 rx.image(
-                    src="https://http.cat/301",
+                    src=State.img_url,
                     width="100%",
-                    height="60vh"
+                    height="60vh",
+                    object_fit="contain"
                 ),
                 rx.box(
                     rx.hstack(
                         rx.vstack(
                             rx.text(
-                                "This is the name of the movie",
+                                State.title,
                                 text_align="start",
                                 font_size="2.612vh",
                                 letter_spacing="-0.1vw",
@@ -68,7 +90,7 @@ def index() -> rx.Component:
                                 font_family="Roboto"
                             ),
                             rx.text(
-                                "This is where the overview will go",
+                                State.overview,
                                 font_size="2vh",
                                 letter_spacing="1px",
                                 line_height="2.2vh",
@@ -77,9 +99,9 @@ def index() -> rx.Component:
                                 height="15vh"
                             )
                         ),
-                        rx.box(
+                        rx.hstack(
                             rx.text(
-                                "xxxx-xx-xx ・ Movie",
+                                State.release_date,
                                 font_size="2vh",
                                 letter_spacing="1px",
                                 line_height="2.2vh",
@@ -87,7 +109,30 @@ def index() -> rx.Component:
                                 color="E7E0EC",
                                 height="5.5vh",
                                 font_family="Roboto"
-                            )
+                            ),
+                            rx.text(
+                                " ・ ",
+                                font_size="2vh",
+                                letter_spacing="1px",
+                                line_height="2.2vh",
+                                text_align="end",
+                                color="E7E0EC",
+                                height="5.5vh",
+                                font_family="Roboto",
+                                text_wrap="nowrap"
+                            ),
+                            rx.text(
+                                State.type,
+                                font_size="2vh",
+                                letter_spacing="1px",
+                                line_height="2.2vh",
+                                text_align="end",
+                                color="E7E0EC",
+                                height="5.5vh",
+                                font_family="Roboto",
+                                text_wrap="nowrap"
+                            ),
+                            spacing="0"
                         ),
                         justify_content="space-between",
                         width="42vw"
@@ -112,7 +157,8 @@ def index() -> rx.Component:
             left="1000vw",
             position="absolute",
             interval=1000,
-            on_change=State.update_time()  
+            on_change=State.update_time(),
+            display = "none"
         ),
         width="100vw",
         height="100vh",
