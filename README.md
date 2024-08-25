@@ -1,7 +1,8 @@
 # movie-countdown
  Counts down to the day of the newest marvel movie TV show / movie release
 
- ![example image](image.png)
+![image](https://github.com/user-attachments/assets/c7b60f99-9a4c-4a15-b1b6-f5ee8fcfef35)
+
 
  The app uses the [MCU countdown API](https://github.com/DiljotSG/MCU-Countdown) which relies on the [TMDB API](https://developer.themoviedb.org/reference/intro/getting-started).
 
